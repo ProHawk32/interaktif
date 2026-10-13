@@ -5,6 +5,9 @@ export interface Settings {
   videoInput: string;
   connect: boolean;
   simulate: boolean;
+  tiktokUsername: string;
+  tiktokServerUrl: string;
+  tiktokConnect: boolean;
   hideUi: boolean;
   goal: number;
   hpMult: number;
@@ -33,7 +36,10 @@ export const DEFAULT_SETTINGS: Settings = {
   apiKey: "",
   videoInput: "",
   connect: false,
-  simulate: true,
+  simulate: false,
+  tiktokUsername: "",
+  tiktokServerUrl: "ws://127.0.0.1:21213",
+  tiktokConnect: false,
   hideUi: false,
   goal: 10000,
   hpMult: 1,
@@ -85,8 +91,6 @@ export function loadSettings(): Settings {
       s.slConnect = !!s.slToken;
       s.seConnect = !!s.seToken;
     }
-    if (p.get("sim") === "0") s.simulate = false;
-    if (p.get("sim") === "1") s.simulate = true;
     const goal = Number(p.get("goal"));
     if (goal > 0) s.goal = goal;
     const hp = Number(p.get("hp"));
@@ -94,6 +98,7 @@ export function loadSettings(): Settings {
   } catch {
     /* ignore */
   }
+  s.simulate = false;
   if (!s.donateUrl?.trim()) s.donateUrl = DEFAULT_DONATE_URL;
   if (!s.noticeText?.trim()) s.noticeText = DEFAULT_NOTICE;
   return s;
@@ -120,6 +125,9 @@ export function obsUrl(s: Settings): string {
   set("sl", s.slToken);
   set("se", s.seToken);
   set("sech", s.seChannel);
+  set("ttuser", s.tiktokUsername);
+  set("ttserver", s.tiktokServerUrl);
+  if (s.tiktokConnect && s.tiktokUsername.trim()) u.searchParams.set("ttlive", "1");
   if (s.donateUrl.trim() !== DEFAULT_DONATE_URL) set("donate", s.donateUrl);
   if (s.noticeText.trim() !== DEFAULT_NOTICE) set("notice", s.noticeText);
   u.searchParams.set("obs", "1");
