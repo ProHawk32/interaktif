@@ -303,7 +303,7 @@ function reducer(state: GameState, action: Action): GameState {
       const alerts = [...state.alerts, alert].slice(-30);
       const alertAt = state.alerts.length ? state.alertAt : now;
       const recent = [...state.recent, { id: nid(), name: updated.name, display, amount, avatar: updated.avatar, message, at: now }].slice(-30);
-      const base: GameState = { ...state, donors, recent, alerts, alertAt, totalDonated: state.totalDonated + amount, chat: chat.slice(-MAX_CHAT) };
+      const base: GameState = { ...state, donors, recent, alerts, alertAt, totalDonated: state.totalDonated + (inp.countTowardsTotal === false ? 0 : amount), chat: chat.slice(-MAX_CHAT) };
 
       // Zafer ekranındayken gelen bağışların hasarı bir sonraki patrona aktarılır
       if (state.victory) return { ...base, pendingDamage: state.pendingDamage + Math.round(amount * DMG_PER_TL) };
@@ -450,7 +450,7 @@ function reducer(state: GameState, action: Action): GameState {
       return spawnNext(state, now);
 
     case "RESET":
-      return freshState(action.seed, state.hpMult);
+      return freshState(false, state.hpMult);
 
     case "SET_HP_MULT": {
       if (action.mult === state.hpMult) return state;
@@ -471,15 +471,13 @@ interface GameOpts {
 }
 
 function init(opts: GameOpts): GameState {
-  return loadState(opts.hpMult) ?? freshState(opts.simulate, opts.hpMult);
+  return loadState(opts.hpMult) ?? freshState(false, opts.hpMult);
 }
 
 export function useGame(opts: GameOpts) {
   const [state, dispatch] = useReducer(reducer, opts, init);
   const ref = useRef(state);
   ref.current = state;
-  const simRef = useRef(opts.simulate);
-  simRef.current = opts.simulate;
   const urlRef = useRef(opts.donateUrl);
   urlRef.current = opts.donateUrl;
 
@@ -516,36 +514,7 @@ export function useGame(opts: GameOpts) {
     return () => window.clearTimeout(t);
   }, []);
 
-  // demo simülasyonu
-  useEffect(() => {
-    let t1 = 0;
-    let t2 = 0;
-    const chatLoop = () => {
-      if (simRef.current && !ref.current.victory) {
-        const name = pick(DEMO_NAMES);
-        const line = pick(CHAT_LINES);
-        dispatch({ type: "CHAT", m: msg(name, line, "chat") });
-        if (isDonateRequest(line)) dispatch({ type: "CTA", by: name, url: urlRef.current });
-      }
-      t1 = window.setTimeout(chatLoop, rand(1500, 3600));
-    };
-    const donateLoop = () => {
-      if (simRef.current) {
-        const name = pick(DEMO_NAMES);
-        dispatch({
-          type: "DONATE",
-          d: { id: donorId(name), name, amount: randomDonationAmount(), message: pick(DONATE_LINES), source: "demo", kind: "demo" },
-        });
-      }
-      t2 = window.setTimeout(donateLoop, rand(7000, 14000));
-    };
-    t1 = window.setTimeout(chatLoop, 1500);
-    t2 = window.setTimeout(donateLoop, 2500);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, []);
+  // Sahte sohbet ve sahte bağış simülasyonu kaldırıldı; yalnızca gerçek platform etkinlikleri işlenir.
 
   const donate = useCallback((d: DonationInput) => dispatch({ type: "DONATE", d }), []);
 
