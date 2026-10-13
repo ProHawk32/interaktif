@@ -99,7 +99,7 @@ function Game() {
     });
   }, []);
 
-  const { state, donate, chat, nextBoss, reset } = useGame({ simulate: settings.simulate, hpMult: settings.hpMult, donateUrl: settings.donateUrl });
+  const { state, donate, chat, nextBoss, reset } = useGame({ hpMult: settings.hpMult, donateUrl: settings.donateUrl });
 
   /** Profil resmi + kanal eşleştirmesi yapıp bağışı oyuna aktarır */
   const donateRich = useCallback(
@@ -310,17 +310,17 @@ function Game() {
         tt={tt}
         onTikTokConnect={(fresh) => {
           if (fresh) reset(false);
-          update({ tiktokConnect: true, simulate: false });
+          update({ tiktokConnect: true });
         }}
         onTikTokDisconnect={() => update({ tiktokConnect: false })}
         onConnect={(fresh) => {
           if (fresh) reset(false);
-          update({ connect: true, simulate: false });
+          update({ connect: true });
         }}
         onDisconnect={() => update({ connect: false })}
         onLinkConnect={(kind, fresh) => {
           if (fresh) reset(false);
-          update(kind === "sl" ? { slConnect: true, simulate: false } : { seConnect: true, simulate: false });
+          update(kind === "sl" ? { slConnect: true } : { seConnect: true });
         }}
         onLinkDisconnect={(kind) => update(kind === "sl" ? { slConnect: false } : { seConnect: false })}
         onManualDonate={(m) =>
