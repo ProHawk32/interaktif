@@ -20,7 +20,6 @@ const VIA: Record<DonationKind, string> = {
   sticker: "Super Sticker",
   member: "YouTube Üyelik",
   gift: "Hediye Üyelik",
-  demo: "ByNoGame",
   test: "Test",
   bynogame: "ByNoGame",
   manual: "ByNoGame",
