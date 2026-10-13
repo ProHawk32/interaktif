@@ -22,12 +22,14 @@ interface Props {
   yt: { status: YTStatus; error: string; info: YTInfo };
   sl: LinkState;
   se: LinkState;
+  tt: LinkState;
+  onTikTokConnect: (fresh: boolean) => void;
+  onTikTokDisconnect: () => void;
   onConnect: (fresh: boolean) => void;
   onDisconnect: () => void;
   onLinkConnect: (kind: LinkKind, fresh: boolean) => void;
   onLinkDisconnect: (kind: LinkKind) => void;
   onManualDonate: (d: ManualDonation) => void;
-  onTestAlert: () => void;
   onReset: (seed: boolean) => void;
   onSkipBoss: () => void;
 }
@@ -117,7 +119,7 @@ function Secret({ value, onChange, disabled, placeholder }: { value: string; onC
 
 export default function ControlPanel(p: Props) {
   const s = p.settings;
-  const [fresh, setFresh] = useState(s.simulate);
+  const [fresh, setFresh] = useState(true);
   const [copied, setCopied] = useState(false);
   const [ytHelp, setYtHelp] = useState(false);
   const [bngHelp, setBngHelp] = useState(true);
@@ -127,6 +129,7 @@ export default function ControlPanel(p: Props) {
   const [ytText, ytColor] = YT_STATUS[p.yt.status];
   const [slText, slColor] = LINK_STATUS[p.sl.status];
   const [seText, seColor] = LINK_STATUS[p.se.status];
+  const [ttText, ttColor] = LINK_STATUS[p.tt.status];
   const canYt = s.apiKey.trim().length > 10 && s.videoInput.trim().length > 0;
   const url = obsUrl(s);
   const donateUrl = fullUrl(s.donateUrl);
@@ -278,10 +281,7 @@ export default function ControlPanel(p: Props) {
                 >
                   💖 Bağışı Ekle
                 </button>
-                <button className="btn btn-ghost" onClick={p.onTestAlert}>
-                  🔔 Rastgele test bildirimi
-                </button>
-              </div>
+                </div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {[10, 50, 100, 250, 600, 1000, 2500, 5000].map((q) => (
                   <button key={q} className="btn btn-ghost !px-3 !py-1.5 text-[13px]" onClick={() => manual(q, s.testName || "Yayıncı")}>
@@ -304,7 +304,6 @@ export default function ControlPanel(p: Props) {
               <Toggle checked={s.showAmounts} onChange={(v) => p.update({ showAmounts: v })} label="Bildirim ve kayan yazıda tutarı göster" />
               <Toggle checked={s.alertSound} onChange={(v) => p.update({ alertSound: v })} label="Bağış bildirim sesi" />
               <Toggle checked={s.tts} onChange={(v) => p.update({ tts: v })} label="Bağış mesajını sesli oku (TTS)" />
-              <Toggle checked={s.simulate} onChange={(v) => p.update({ simulate: v })} label="Demo simülasyonu (sahte bağışlar)" />
               <Toggle checked={s.hideUi} onChange={(v) => p.update({ hideUi: v })} label="Yayın modu (kontrolleri gizle)" />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -320,6 +319,26 @@ export default function ControlPanel(p: Props) {
                   ))}
                 </select>
               </Field>
+            </div>
+          </Section>
+
+          {/* ------------------------------ TikTok LIVE ------------------------------ */}
+          <Section title="🎵 TikTok LIVE (sohbet, hediyeler ve takipler)" accent="#80f5d2">
+            <Status text={ttText} color={ttColor} extra={p.tt.count ? `${p.tt.count} etkinlik alındı` : undefined} />
+            {p.tt.error && <ErrorBox>{p.tt.error}</ErrorBox>}
+            <Field label="TikTok kullanıcı adı" hint="@ işareti olmadan yazın. TikTok hesabı canlı yayında olmalı.">
+              <input className="inp" value={s.tiktokUsername} disabled={s.tiktokConnect} onChange={(e) => p.update({ tiktokUsername: e.target.value })} placeholder="ornek_kullanici" />
+            </Field>
+            <Field label="Yerel TikTok köprüsü WebSocket adresi">
+              <input className="inp font-mono text-[13px]" value={s.tiktokServerUrl} disabled={s.tiktokConnect} onChange={(e) => p.update({ tiktokServerUrl: e.target.value })} placeholder="ws://127.0.0.1:21213" />
+            </Field>
+            {s.tiktokConnect ? (
+              <button className="btn btn-red" onClick={p.onTikTokDisconnect}>⏹ TikTok bağlantısını kes</button>
+            ) : (
+              <button className="btn btn-gold" disabled={!s.tiktokUsername.trim()} onClick={() => p.onTikTokConnect(fresh)}>🎵 TikTok LIVE'a bağlan</button>
+            )}
+            <div className="rounded-md bg-black/40 p-3 text-[12px] leading-relaxed text-white/75">
+              <b className="text-[#80f5d2]">İlk kurulum:</b> Proje klasöründe <code>npm install</code> çalıştırın. Ardından ayrı bir terminalde <code>npm run tiktok</code> komutuyla köprüyü başlatın. Oyunun çalıştığı terminalde <code>npm run dev</code> açık kalmalı. TikTok sohbeti oyuna aktarılır; hediyeler savaş katkısı sağlar, ancak coin sayısı TL bağış toplamına eklenmez.
             </div>
           </Section>
 
@@ -400,9 +419,6 @@ export default function ControlPanel(p: Props) {
               </button>
               <button className="btn btn-red" onClick={() => window.confirm("Tüm bağışçılar ve ilerleme silinsin mi?") && p.onReset(false)}>
                 🗑 Sıfırla (boş kale)
-              </button>
-              <button className="btn btn-ghost" onClick={() => window.confirm("Demo verileriyle yeniden başlatılsın mı?") && p.onReset(true)}>
-                🎮 Demo ile sıfırla
               </button>
             </div>
             <p className="text-[12px] text-white/50">İlerleme tarayıcıya otomatik kaydedilir; sayfa yenilense de savaş kaldığı yerden devam eder.</p>
