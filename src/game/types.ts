@@ -1,4 +1,4 @@
-export type DonorSource = "demo" | "youtube" | "tiktok" | "test" | "bynogame";
+export type DonorSource = "youtube" | "tiktok" | "test" | "bynogame";
 
 export interface Donor {
   id: string;
@@ -78,7 +78,7 @@ export interface Victory {
   lastHit: string;
 }
 
-export type DonationKind = "superchat" | "sticker" | "member" | "gift" | "demo" | "test" | "bynogame" | "manual" | "tiktokGift";
+export type DonationKind = "superchat" | "sticker" | "member" | "gift" | "test" | "bynogame" | "manual" | "tiktokGift";
 
 export interface DonationInput {
   id?: string;
