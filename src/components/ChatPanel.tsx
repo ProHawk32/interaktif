@@ -19,16 +19,13 @@ interface Props {
   chat: ChatMsg[];
   log: ChatMsg[];
   donors: Donor[];
-  showInput: boolean;
-  onSend: (text: string) => void;
   mode: { label: string; color: string };
   showAmounts: boolean;
   donateUrl: string;
 }
 
-export default function ChatPanel({ chat, log, donors, showInput, onSend, mode, showAmounts, donateUrl }: Props) {
+export default function ChatPanel({ chat, log, donors, mode, showAmounts, donateUrl }: Props) {
   const [tab, setTab] = useState<Tab>("chat");
-  const [text, setText] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -101,26 +98,7 @@ export default function ChatPanel({ chat, log, donors, showInput, onSend, mode, 
         {tab === "help" && <Help donateUrl={donateUrl} />}
       </div>
 
-      {showInput && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSend(text);
-            setText("");
-          }}
-          className="flex border-t border-[#3b2a1f]"
-        >
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Test: mesaj, !bağış, !bağış 50, !saldır, !sıra"
-            className="h-8 min-w-0 flex-1 bg-black/40 px-2 text-[14px] text-white outline-none placeholder:text-white/35"
-          />
-          <button type="submit" className="bg-[#c9a063] px-3 text-[13px] font-extrabold text-[#1b1208] hover:bg-[#ffd43b]">
-            GÖNDER
-          </button>
-        </form>
-      )}
+
     </div>
   );
 }
