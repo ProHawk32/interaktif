@@ -9,7 +9,7 @@ import Effects from "./components/Effects";
 import Ticker from "./components/Ticker";
 import VictoryOverlay from "./components/VictoryOverlay";
 import { extractHandle, isDefaultAvatar, lookupUser, rememberUser, resolveHandle } from "./game/avatars";
-import { DEMO_NAMES, DONATE_LINES, bossFor, donorId, formatNum, formatTL, pick, randomDonationAmount } from "./game/data";
+import { bossFor, donorId, formatNum, formatTL } from "./game/data";
 import { useStreamElements, useStreamlabs, type IncomingDonation, type LinkStatus } from "./game/donations";
 import { STAGE_H, STAGE_W } from "./game/layout";
 import { loadSettings, saveSettings, type Settings } from "./game/settings";
@@ -17,6 +17,7 @@ import { preloadSprites } from "./game/sprites";
 import type { DonationInput } from "./game/types";
 import { useGame } from "./game/useGame";
 import { toTL, useYouTubeLive, type YTEvent, type YTStatus } from "./game/youtube";
+import { useTikTokLive, type TikTokLiveEvent } from "./game/tiktok";
 
 function useStageScale() {
   const [scale, setScale] = useState(1);
@@ -64,7 +65,7 @@ function Loading({ progress }: { progress: number }) {
   );
 }
 
-function modeLabel(s: Settings, yt: YTStatus, sl: LinkStatus, se: LinkStatus): { label: string; color: string } {
+function modeLabel(s: Settings, yt: YTStatus, sl: LinkStatus, se: LinkStatus, tt: LinkStatus): { label: string; color: string } {
   const parts: string[] = [];
   let color = "#adb5bd";
   if (s.slConnect || s.seConnect) {
@@ -77,7 +78,11 @@ function modeLabel(s: Settings, yt: YTStatus, sl: LinkStatus, se: LinkStatus): {
     parts.push(yt === "live" ? "🔴 YouTube ✓" : yt === "error" ? "🔴 YouTube ⚠" : yt === "ended" ? "⏹ YouTube" : "🔴 YouTube …");
     if (color === "#adb5bd") color = yt === "live" ? "#ff6b6b" : yt === "error" ? "#ff922b" : "#ffd43b";
   }
-  if (!parts.length) return s.simulate ? { label: "🎮 DEMO MODU", color: "#9ad0ff" } : { label: "⏸ Bağlantı yok", color: "#adb5bd" };
+  if (s.tiktokConnect) {
+    parts.push(tt === "live" ? "🎵 TikTok LIVE ✓" : tt === "error" ? "🎵 TikTok ⚠" : "🎵 TikTok …");
+    if (color === "#adb5bd") color = tt === "live" ? "#80f5d2" : tt === "error" ? "#ff922b" : "#ffd43b";
+  }
+  if (!parts.length) return { label: "⏸ Bağlantı yok", color: "#adb5bd" };
   return { label: parts.join(" · "), color };
 }
 
@@ -175,6 +180,42 @@ function Game() {
     minPollMs: settings.minPollMs,
     onEvents,
   });
+  const onTikTokEvent = useCallback(
+    (event: TikTokLiveEvent) => {
+      const id = "tt:" + event.user.uniqueId;
+      const avatar = event.user.avatar || undefined;
+      const channelUrl = `https://www.tiktok.com/@${event.user.uniqueId}`;
+      if (event.type === "chat" || event.type === "follow") {
+        chat({ id, name: event.user.nickname, avatar, channelUrl }, event.type === "follow" ? "yeni takipçi oldu ❤️" : event.text || "", "tiktok");
+        return;
+      }
+      if (event.type === "gift") {
+        const coins = Math.max(1, Math.round(event.coins || 0));
+        void donateRich({
+          id,
+          name: event.user.nickname,
+          amount: coins,
+          avatar,
+          channelUrl,
+          message: `${event.giftName || "TikTok hediyesi"} ×${event.count || 1}`,
+          display: `🎁 ${event.giftName || "Hediye"} ×${event.count || 1} · ${coins} coin`,
+          source: "tiktok",
+          kind: "tiktokGift",
+          via: "TikTok LIVE",
+          countTowardsTotal: false,
+        });
+      }
+    },
+    [chat, donateRich],
+  );
+
+  const tt = useTikTokLive({
+    serverUrl: settings.tiktokServerUrl,
+    username: settings.tiktokUsername,
+    active: settings.tiktokConnect && settings.tiktokUsername.trim().length > 0,
+    onEvent: onTikTokEvent,
+  });
+
 
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -194,7 +235,7 @@ function Game() {
 
   const def = bossFor(state.bossIndex);
   const shaking = state.shakeUntil > now;
-  const mode = modeLabel(settings, yt.status, sl.status, se.status);
+  const mode = modeLabel(settings, yt.status, sl.status, se.status, tt.status);
   const showBanner = state.bossSpawnAt > 0 && now - state.bossSpawnAt < 3800 && !state.victory;
   const testerName = settings.testName || "Yayıncı";
 
@@ -269,6 +310,12 @@ function Game() {
         yt={yt}
         sl={sl}
         se={se}
+        tt={tt}
+        onTikTokConnect={(fresh) => {
+          if (fresh) reset(false);
+          update({ tiktokConnect: true, simulate: false });
+        }}
+        onTikTokDisconnect={() => update({ tiktokConnect: false })}
         onConnect={(fresh) => {
           if (fresh) reset(false);
           update({ connect: true, simulate: false });
@@ -282,10 +329,6 @@ function Game() {
         onManualDonate={(m) =>
           void donateRich({ name: m.name, amount: m.amount, message: m.message, avatar: m.avatar || undefined, source: "bynogame", kind: "manual", via: "ByNoGame" })
         }
-        onTestAlert={() => {
-          const name = pick(DEMO_NAMES);
-          void donateRich({ name, amount: randomDonationAmount(), message: pick(DONATE_LINES), source: "test", kind: "test", via: "ByNoGame · test" });
-        }}
         onReset={(seed) => reset(seed)}
         onSkipBoss={nextBoss}
       />
