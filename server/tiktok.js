@@ -44,7 +44,7 @@ async function startConnection(username) {
     status("error", "Geçerli bir TikTok kullanıcı adı girin (@ işareti olmadan).");
     return;
   }
-  if (connection && currentUsername.toLowerCase() === normalized.toLowerCase()) {
+  if (connection && currentUsername.toLowerCase() === normalized.toLowerCase() && currentStatus.status !== "error") {
     sendStatusToAll();
     return;
   }
@@ -130,7 +130,10 @@ server.on("connection", (client) => {
       void stopConnection().then(() => status("idle"));
     }
   });
-  client.on("close", () => clients.delete(client));
+  client.on("close", () => {
+    clients.delete(client);
+    if (clients.size === 0) void stopConnection().then(() => status("idle"));
+  });
 });
 server.on("listening", () => {
   console.log(`TikTok WebSocket bridge listening on ws://${HOST}:${PORT}`);
