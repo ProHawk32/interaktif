@@ -1,4 +1,4 @@
-export type DonorSource = "demo" | "youtube" | "test" | "bynogame";
+export type DonorSource = "demo" | "youtube" | "tiktok" | "test" | "bynogame";
 
 export interface Donor {
   id: string;
@@ -78,7 +78,7 @@ export interface Victory {
   lastHit: string;
 }
 
-export type DonationKind = "superchat" | "sticker" | "member" | "gift" | "demo" | "test" | "bynogame" | "manual";
+export type DonationKind = "superchat" | "sticker" | "member" | "gift" | "demo" | "test" | "bynogame" | "manual" | "tiktokGift";
 
 export interface DonationInput {
   id?: string;
@@ -91,6 +91,7 @@ export interface DonationInput {
   source: DonorSource;
   kind?: DonationKind;
   via?: string;
+  countTowardsTotal?: boolean;
 }
 
 export interface ChatAuthor {
