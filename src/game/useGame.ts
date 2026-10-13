@@ -440,7 +440,6 @@ function reducer(state: GameState, action: Action): GameState {
 }
 
 interface GameOpts {
-  simulate: boolean;
   hpMult: number;
   donateUrl: string;
 }
