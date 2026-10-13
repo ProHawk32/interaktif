@@ -4,7 +4,6 @@ export interface Settings {
   apiKey: string;
   videoInput: string;
   connect: boolean;
-  simulate: boolean;
   tiktokUsername: string;
   tiktokServerUrl: string;
   tiktokConnect: boolean;
@@ -36,7 +35,6 @@ export const DEFAULT_SETTINGS: Settings = {
   apiKey: "",
   videoInput: "",
   connect: false,
-  simulate: false,
   tiktokUsername: "",
   tiktokServerUrl: "ws://127.0.0.1:21213",
   tiktokConnect: false,
@@ -89,7 +87,6 @@ export function loadSettings(): Settings {
     if (p.get("tts") === "1") s.tts = true;
     if (p.get("obs") === "1") {
       s.hideUi = true;
-      s.simulate = false;
       s.connect = !!(s.apiKey && s.videoInput);
       s.slConnect = !!s.slToken;
       s.seConnect = !!s.seToken;
@@ -101,7 +98,6 @@ export function loadSettings(): Settings {
   } catch {
     /* ignore */
   }
-  s.simulate = false;
   if (!s.donateUrl?.trim()) s.donateUrl = DEFAULT_DONATE_URL;
   if (!s.noticeText?.trim()) s.noticeText = DEFAULT_NOTICE;
   return s;
