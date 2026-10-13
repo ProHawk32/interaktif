@@ -9,7 +9,7 @@ import Effects from "./components/Effects";
 import Ticker from "./components/Ticker";
 import VictoryOverlay from "./components/VictoryOverlay";
 import { extractHandle, isDefaultAvatar, lookupUser, rememberUser, resolveHandle } from "./game/avatars";
-import { bossFor, donorId, formatNum, formatTL } from "./game/data";
+import { bossFor, formatNum, formatTL } from "./game/data";
 import { useStreamElements, useStreamlabs, type IncomingDonation, type LinkStatus } from "./game/donations";
 import { STAGE_H, STAGE_W } from "./game/layout";
 import { loadSettings, saveSettings, type Settings } from "./game/settings";
@@ -237,7 +237,6 @@ function Game() {
   const shaking = state.shakeUntil > now;
   const mode = modeLabel(settings, yt.status, sl.status, se.status, tt.status);
   const showBanner = state.bossSpawnAt > 0 && now - state.bossSpawnAt < 3800 && !state.victory;
-  const testerName = settings.testName || "Yayıncı";
 
   return (
     <div className="flex h-screen w-screen items-center justify-center overflow-hidden bg-black">
@@ -265,11 +264,9 @@ function Game() {
             chat={state.chat}
             log={state.log}
             donors={state.donors}
-            showInput={!settings.hideUi}
             mode={mode}
             showAmounts={settings.showAmounts}
             donateUrl={settings.donateUrl}
-            onSend={(t) => chat({ id: donorId(testerName), name: testerName }, t, "test")}
           />
 
           {showBanner && (
