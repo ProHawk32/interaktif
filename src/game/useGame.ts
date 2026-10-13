@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import {
-  CHAT_LINES, DEMO_NAMES, DMG_PER_TL, DONATE_LINES, FLOORS, VICTORY_MS, alertDuration, bossCycle, bossFor, bossMaxHp,
+  DMG_PER_TL, FLOORS, VICTORY_MS, alertDuration, bossCycle, bossFor, bossMaxHp,
   classFor, colorForName, donorId, floorForRank, formatNum, formatTL, isDonateRequest, maxHpFor, normName, normalizeCmd,
-  pick, prettyUrl, randomDonationAmount, starsFor, superChatColor,
+  prettyUrl, starsFor, superChatColor,
 } from "./data";
 import { BOSS_FEET, bossBox, computeLayout } from "./layout";
 import type {
@@ -10,7 +10,7 @@ import type {
   RecentDonation, Victory,
 } from "./types";
 
-const SAVE_KEY = "zb-save-v3";
+const SAVE_KEY = "zb-save-v4";
 const MAX_CHAT = 80;
 const MAX_LOG = 60;
 const CTA_MS = 10_000;
@@ -62,34 +62,10 @@ function findDonor(list: Donor[], id: string, name: string): Donor | undefined {
   return list.find((d) => d.id === id) ?? list.find((d) => normName(d.name) === n);
 }
 
-const SEED: [string, number, string][] = [
-  ["KING_GAMER_TR", 1250, "Kale benim! 👑"],
-  ["FIRE_LADY", 680, "Ejderhayı ben keserim 🔥"],
-  ["MAGIC_GUY", 390, "Büyüler hazır ✨"],
-  ["Muhafiz_Ali", 230, ""],
-  ["UstaAvci", 130, "Oklarım sivri 🏹"],
-  ["BuyucuCiragi", 64, ""],
-  ["AcemiCan", 25, "ilk bağışım 🎉"],
-  ["ZeynepZ", 12, ""],
-  ["USER_XYZ", 4, ""],
-  ["OrkKatili", 2, ""],
-];
-
-function freshState(seed: boolean, hpMult: number): GameState {
+function freshState(hpMult: number): GameState {
   const now = Date.now();
-  const donors = seed
-    ? SEED.map(([name, total], i) => {
-        const d = makeDonor(donorId(name), name, "demo", now - 100000 + i * 1000);
-        d.total = total;
-        d.hp = Math.round(maxHpFor(total) * rand(0.6, 1));
-        return d;
-      })
-    : [];
-  const recent: RecentDonation[] = seed
-    ? SEED.slice(0, 7)
-        .reverse()
-        .map(([name, t, m]) => ({ id: nid(), name, display: formatTL(t), amount: t, message: m, at: 0 }))
-    : [];
+  const donors: Donor[] = [];
+  const recent: RecentDonation[] = [];
   const max = bossMaxHp(0, hpMult);
   return {
     bossIndex: 0,
@@ -109,7 +85,7 @@ function freshState(seed: boolean, hpMult: number): GameState {
     log: [],
     recent,
     victory: null,
-    totalDonated: seed ? SEED.reduce((a, [, t]) => a + t, 0) : 0,
+    totalDonated: 0,
     pendingDamage: 0,
     lastSysReply: 0,
     alerts: [],
@@ -139,7 +115,7 @@ function loadState(hpMult: number): GameState | null {
     if (!raw) return null;
     const s = JSON.parse(raw) as SaveData;
     const savedDonors = s.donors;
-    if (s.v !== 3 || !Array.isArray(savedDonors)) return null;
+    if (s.v !== 4 || !Array.isArray(savedDonors)) return null;
     const base = freshState(false, hpMult);
     return {
       ...base,
@@ -161,7 +137,7 @@ function loadState(hpMult: number): GameState | null {
 function saveState(s: GameState): void {
   try {
     const data: SaveData = {
-      v: 3,
+      v: 4,
       bossIndex: s.bossIndex,
       bossHp: s.bossHp,
       bossMax: s.bossMax,
@@ -190,7 +166,7 @@ type Action =
   | { type: "CHAT"; m: ChatMsg }
   | { type: "TICK" }
   | { type: "NEXT_BOSS" }
-  | { type: "RESET"; seed: boolean }
+  | { type: "RESET" }
   | { type: "SET_HP_MULT"; mult: number };
 
 function strikeEffects(s: GameState, sprite: string, dmg: number, crit: boolean, now: number, big: boolean, small = false): Effect[] {
@@ -450,7 +426,7 @@ function reducer(state: GameState, action: Action): GameState {
       return spawnNext(state, now);
 
     case "RESET":
-      return freshState(false, state.hpMult);
+      return freshState(state.hpMult);
 
     case "SET_HP_MULT": {
       if (action.mult === state.hpMult) return state;
@@ -471,7 +447,7 @@ interface GameOpts {
 }
 
 function init(opts: GameOpts): GameState {
-  return loadState(opts.hpMult) ?? freshState(false, opts.hpMult);
+  return loadState(opts.hpMult) ?? freshState(opts.hpMult);
 }
 
 export function useGame(opts: GameOpts) {
@@ -543,7 +519,7 @@ export function useGame(opts: GameOpts) {
   }, []);
 
   const nextBoss = useCallback(() => dispatch({ type: "NEXT_BOSS" }), []);
-  const reset = useCallback((seed: boolean) => dispatch({ type: "RESET", seed }), []);
+  const reset = useCallback((_seed: boolean) => dispatch({ type: "RESET" }), []);
 
   return { state, donate, chat, nextBoss, reset };
 }
