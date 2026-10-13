@@ -95,7 +95,10 @@ export function useTikTokLive({ serverUrl, username, active, onEvent }: Options)
       window.clearTimeout(retryTimer);
       if (socket) {
         socket.onclose = null;
-        try { socket.close(); } catch { /* ignore */ }
+        try {
+          if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: "disconnect" }));
+          socket.close();
+        } catch { /* ignore */ }
       }
     };
   }, [serverUrl, username, active]);
