@@ -126,6 +126,9 @@ server.on("connection", (client) => {
     let message;
     try { message = JSON.parse(String(raw)); } catch { return; }
     if (message?.type === "connect") void startConnection(message.username);
+    if (message?.type === "disconnect") {
+      void stopConnection().then(() => status("idle"));
+    }
   });
   client.on("close", () => clients.delete(client));
 });
