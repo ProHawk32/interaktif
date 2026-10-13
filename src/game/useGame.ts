@@ -24,6 +24,7 @@ const VIA: Record<DonationKind, string> = {
   test: "Test",
   bynogame: "ByNoGame",
   manual: "ByNoGame",
+  tiktokGift: "TikTok LIVE hediyesi",
 };
 
 let uid = 1;
