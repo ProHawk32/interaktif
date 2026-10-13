@@ -20,7 +20,6 @@ const VIA: Record<DonationKind, string> = {
   sticker: "Super Sticker",
   member: "YouTube Üyelik",
   gift: "Hediye Üyelik",
-  test: "Test",
   bynogame: "ByNoGame",
   manual: "ByNoGame",
   tiktokGift: "TikTok LIVE hediyesi",
@@ -500,16 +499,6 @@ export function useGame(opts: GameOpts) {
     const badge = a.isOwner ? "YAYINCI" : a.isMod ? "MOD" : a.isMember ? "ÜYE" : undefined;
     dispatch({ type: "CHAT", m: msg(a.name, t, a.isOwner ? "owner" : "chat", undefined, { avatar: a.avatar, badge }) });
     const cmd = normalizeCmd(t);
-    if (source === "test") {
-      const m = cmd.match(/^!(bagis|donate|sc)\s+(\d+)/);
-      if (m) {
-        dispatch({
-          type: "DONATE",
-          d: { id: a.id, name: a.name, amount: Math.min(100000, parseInt(m[2], 10)), message: t.replace(/^\S+\s+\d+\s*/, ""), source: "test", kind: "test" },
-        });
-        return;
-      }
-    }
     if (isDonateRequest(t)) {
       dispatch({ type: "CTA", by: a.name, url: urlRef.current });
       return;
