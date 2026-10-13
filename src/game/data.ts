@@ -157,30 +157,6 @@ export function truncate(s: string, n: number): string {
   return s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s;
 }
 
-/* ------------------------------------------------------------------ */
-/*  DEMO / SOHBET                                                      */
-/* ------------------------------------------------------------------ */
-export const DEMO_NAMES = [
-  "KING_GAMER_TR", "FIRE_LADY", "MAGIC_GUY", "USER_XYZ", "ZindanKurdu", "EfsaneBerk", "AyseOyunda", "MehmetGG",
-  "NightOwl_61", "CanavarAvcisi", "Pixel_Deniz", "Kaan_Reis", "ElifPro", "GölgeKılıç", "BuraKx", "Selin_42",
-  "OrkKatili", "YusufYT", "KaraBüyücü", "DemirYumruk", "ZeynepZ", "TurkishWarrior", "Mert_06", "AteşKraliçesi",
-  "LastHit_Baran", "Muhafiz_Ali", "UstaAvci", "BuyucuCiragi", "AcemiCan",
-];
-
-export const CHAT_LINES = [
-  "SALDIR!", "KESELİM!", "patron düşüyor!!", "KRAL GELDİ 👑", "ejderha katili reis", "bu patron çok sağlam",
-  "ben köylüyüm kimse bakmasın 😭", "KALE ZİRVESİNE ÇIKACAĞIM", "LET'S GOOO", "PogChamp", "patron bana vurdu 😡",
-  "canım gitti heal yok mu", "MAGIC_GUY taşıyor", "clip it!!", "wombo combo", "!sıra", "bu boss hileli", "GG",
-  "5. patron gelince görürsünüz", "zirve çok uzak", "F", "KATLİAM", "W chat", "kılıcım hazır ⚔️", "BÜYÜ ATIYORUM ✨",
-  "!saldır", "evrimleştim!!", "yıldızlarım doldu ⭐⭐⭐", "!bağış", "selam chat 👋", "yayın çok iyi bugün",
-];
-
-export const DONATE_LINES = [
-  "al bunu patron!", "zirveye geliyorum 👑", "kesin şunu artık", "bağış savaşı başlasın", "benden küçük bir katkı ❤️",
-  "KALE BENİM", "köylülükten kurtulayım", "patron düşsün", "ekip için 💪", "bu da benden 🔥", "evrimleşme vakti!",
-  "selamlar hawk, yayın efsane", "ejderhayı birlikte keselim", "",
-];
-
 const NAME_COLORS = ["#ff8787", "#74c0fc", "#63e6be", "#ffe066", "#b197fc", "#f783ac", "#ffc078", "#66d9e8", "#ff922b", "#38d9a9", "#a9e34b", "#e599f7"];
 
 export function hashStr(s: string): number {
@@ -199,19 +175,6 @@ export function formatNum(n: number): string {
 
 export function formatTL(n: number): string {
   return `${formatNum(n)} TL`;
-}
-
-export function pick<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-export function randomDonationAmount(): number {
-  const r = Math.random();
-  if (r < 0.3) return Math.floor(Math.random() * 9) + 1;
-  if (r < 0.6) return pick([10, 15, 20, 25, 30, 40, 50]);
-  if (r < 0.82) return pick([60, 75, 100, 120, 150]);
-  if (r < 0.95) return pick([200, 250, 300, 400, 500]);
-  return pick([600, 750, 1000]);
 }
 
 /** YouTube Super Chat renk kademeleri (TL karşılığına göre) */
