@@ -79,6 +79,9 @@ export function loadSettings(): Settings {
     if (str("sl")) s.slToken = str("sl");
     if (str("se")) s.seToken = str("se");
     if (str("sech")) s.seChannel = str("sech");
+    if (str("ttuser")) s.tiktokUsername = str("ttuser");
+    if (str("ttserver")) s.tiktokServerUrl = str("ttserver");
+    if (p.get("ttlive") === "1") s.tiktokConnect = !!s.tiktokUsername;
     if (str("notice")) s.noticeText = str("notice");
     if (p.get("amounts") === "1") s.showAmounts = true;
     if (p.get("amounts") === "0") s.showAmounts = false;
